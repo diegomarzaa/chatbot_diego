@@ -7,6 +7,7 @@ from PIL import Image
 from io import BytesIO
 
 import re
+import time
 
 
 def encode_image(image_file):
@@ -24,23 +25,50 @@ def encode_image(image_file):
     image.save(buffered, format="JPEG")
     return base64.b64encode(buffered.getvalue()).decode("utf-8")
     
+def api_on_change():
+    api_key = st.session_state.input_key
+    col3 = st.session_state.col3
+    success_message = st.session_state.success_message
+
+    with col3:
+        if re.match(r"sk-[a-zA-Z0-9]+", api_key):
+            st.session_state.api_key = api_key
+            success_message.success("Clave cargada!")
+            try:
+                st.session_state.chat = OpenAI(api_key=st.session_state.api_key)
+            except Exception as e:
+                success_message.error(f"Error: {e}")
+
+        elif api_key == "contraseña":
+            st.session_state.api_key = st.session_state.secret_developer_key
+            success_message.success("Clave gratuita cargada! (solo 1 uso)")
+            # Inicializar cliente de OpenAI
+            try:
+                st.session_state.chat = OpenAI(api_key=st.session_state.api_key)
+            except Exception as e:
+                success_message.error(f"Error: {e}")
+
+        elif api_key == "":
+            success_message.error("No dejes el campo vacío bobo")
+        else:
+            success_message.error("Este tipo de clave es inválida!")
+
+        time.sleep(1)
+
 
 def main():
 
-    # VARIABLES DE SESIÓN
-
-    if "chat" not in st.session_state:
-        st.session_state.chat = None
-
     # PAGE CONFIG
     st.set_page_config(page_title="DESCRIPTOR DE IMÁGENES", page_icon=":robot_face:", layout="centered")
-    st.header("DESCRIPTOR DE IMÁGENES")
-    st.write("1 - Introduce la API KEY de OpenAI (si no tienes, escribe 'contraseña', de esta forma usarás la clave gratuita de Dieguito, pero solo puedes usarla 1 vez)"
-            "\n\n2 - Sube una imagen"
-            "\n\n3 - Si quieres, añade instrucciones personalizadas, esto no es necesario, por defecto se describirá la imagen."
-            "\n\n4 - Pulsa el botón de analizar imagen y espera a que se genere la descripción.\n\n\n")
+    st.title("DESCRIPTOR DE IMÁGENES")
+    st.markdown("---")
+    st.subheader("Funcionamiento")
+    st.markdown("1) Introduce la API KEY de OpenAI (si no tienes, escribe 'contraseña', de esta forma usarás la clave gratuita de Dieguito, pero solo puedes usarla 1 vez)"
+            "\n\n2) Sube una imagen"
+            "\n\n3) Si quieres, añade instrucciones personalizadas, esto no es necesario, por defecto se describirá la imagen."
+            "\n\n4) Pulsa el botón de analizar imagen y espera a que se genere la descripción.\n\n\n")
 
-
+    st.markdown("---")
 
     ################## API KEY ##################
 
@@ -53,52 +81,60 @@ def main():
     if "secret_developer_key" not in st.session_state:
         st.session_state.secret_developer_key = st.secrets.OPENAI_API_KEY
 
+    if "chat" not in st.session_state:
+        st.session_state.chat = None
+
+    if "input_key" not in st.session_state:
+        st.session_state.input_key = None
+
+    if "success_message" not in st.session_state:
+        st.session_state.success_message = st.success.empty()
+
+
+    # Layout
 
     col1, col2, col3 = st.columns([3, 2, 2])
 
+
     with col1:
-        input_key = st.text_input("API KEY", placeholder="Introduce la API key", type="password")
+        st.text_input("API KEY", 
+                        placeholder="Introduce la API key", 
+                        type="password",
+                        on_change=api_on_change,
+                        key="input_key")
+    
     with col2:
         # Move the botton down a bit
         st.markdown("""<style>.css-1aumxhk {margin-top: 3rem;}</style>""", unsafe_allow_html=True)
         st.markdown("""<style>.css-1aumxhk {margin-top: 2rem;}</style>""", unsafe_allow_html=True)
         boton_key = st.button("Guardar API KEY")
+        if boton_key:
+            api_on_change()
 
-    if boton_key:
-        with col3:
-            success_message = st.empty()
-            st.markdown("""<style>.css-1aumxhk {margin-top: 3rem;}</style>""", unsafe_allow_html=True)
-            st.markdown("""<style>.css-1aumxhk {margin-top: 2rem;}</style>""", unsafe_allow_html=True)
-            
-            if re.match(r"sk-[a-zA-Z0-9]+", input_key):
-                st.session_state["api_key"] = input_key
-                success_message.success("Clave cargada!")
-                try:
-                    st.session_state["chat"] = OpenAI(api_key=st.session_state["api_key"])
-                except Exception as e:
-                    success_message.error(f"Error: {e}")
+    st.markdown("---")
 
-            elif input_key == "contraseña":
-                st.session_state["api_key"] = st.session_state.secret_developer_key
-                success_message.success("Clave gratuita cargada! (solo 1 uso)")
-                # Inicializar cliente de OpenAI
-                try:
-                    st.session_state["chat"] = OpenAI(api_key=st.session_state["api_key"])
-                except Exception as e:
-                    success_message.error(f"Error: {e}")
+    with col3:
+        if "col3" not in st.session_state:
+            st.session_state.col3 = col3
 
-            elif input_key == "":
-                success_message.error("No dejes el campo vacío bobo")
-            else:
-                success_message.error("Este tipo de clave es inválida!")
+        st.markdown("""<style>.css-1aumxhk {margin-top: 3rem;}</style>""", unsafe_allow_html=True)
+        st.markdown("""<style>.css-1aumxhk {margin-top: 2rem;}</style>""", unsafe_allow_html=True)
+        # st.session_state.success_message.warning("Debes introducir una clave.")
 
-    # UPLOAD IMAGE
+
+    ################## IMAGE ##################
+                
     uploaded_file = st.file_uploader("Sube una fotito", type=["png", "jpg", "jpeg"]) 
     if uploaded_file:
         # DISPLAY IMAGE
         st.image(uploaded_file, width=250)
+    
+    st.markdown("---")
 
-    # Toggle details
+
+
+    ################## EXTRA PROMPT ##################
+
     show_details = st.toggle("Agregar instrucciones?", value=False)
     if show_details:
         # Texto de detalles
@@ -106,9 +142,12 @@ def main():
             "Añade conexto adicional: ",
             disabled=not show_details,
         )
+    
+    st.markdown("---")
 
 
-    # Botón de enviar
+    ################## SEND BUTTON ##################
+
     analyze_button = st.button("Analizar imagen")
 
     if uploaded_file and st.session_state['api_key'] != None and analyze_button and st.session_state['chat'] and st.session_state["usos_dev_key"] > 0:
