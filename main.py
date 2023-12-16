@@ -1,8 +1,5 @@
 from openai import OpenAI
 
-from dotenv import load_dotenv
-import os
-
 import streamlit as st
 
 import base64
@@ -31,11 +28,6 @@ def encode_image(image_file):
 def main():
 
     # VARIABLES DE SESIÓN
-    if "usos_dev_key" not in st.session_state:
-        st.session_state.usos_dev_key = 1
-    
-    if "api_key" not in st.session_state:
-        st.session_state.api_key = None
 
     if "chat" not in st.session_state:
         st.session_state.chat = None
@@ -49,10 +41,17 @@ def main():
             "\n\n4 - Pulsa el botón de analizar imagen y espera a que se genere la descripción.\n\n\n")
 
 
+
     ################## API KEY ##################
 
-    load_dotenv()
-    secret_developer_key = os.getenv("OPENAI_API_KEY")
+    if "usos_dev_key" not in st.session_state:
+        st.session_state.usos_dev_key = 1
+
+    if "api_key" not in st.session_state:
+        st.session_state.api_key = None
+
+    if "secret_developer_key" not in st.session_state:
+        st.session_state.secret_developer_key = st.secrets.OPENAI_API_KEY
 
 
     col1, col2, col3 = st.columns([3, 2, 2])
@@ -80,7 +79,7 @@ def main():
                     success_message.error(f"Error: {e}")
 
             elif input_key == "contraseña":
-                st.session_state["api_key"] = secret_developer_key
+                st.session_state["api_key"] = st.session_state.secret_developer_key
                 success_message.success("Clave gratuita cargada! (solo 1 uso)")
                 # Inicializar cliente de OpenAI
                 try:
