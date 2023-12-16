@@ -9,7 +9,6 @@ from io import BytesIO
 import re
 import time
 
-
 def encode_image(image_file):
     """Encode image to base64 string."""
     if isinstance(image_file, str):
@@ -28,30 +27,29 @@ def encode_image(image_file):
 def api_on_change():
     api_key = st.session_state.input_key
     col3 = st.session_state.col3
-    success_message = st.session_state.success_message
 
     with col3:
         if re.match(r"sk-[a-zA-Z0-9]+", api_key):
             st.session_state.api_key = api_key
-            success_message.success("Clave cargada!")
+            st.session_state.success_message.success("Clave cargada!")
             try:
                 st.session_state.chat = OpenAI(api_key=st.session_state.api_key)
             except Exception as e:
-                success_message.error(f"Error: {e}")
+                st.session_state.success_message.error(f"Error: {e}")
 
         elif api_key == "contraseña":
             st.session_state.api_key = st.session_state.secret_developer_key
-            success_message.success("Clave gratuita cargada! (solo 1 uso)")
+            st.session_state.success_message.success("Clave gratuita cargada! (solo 1 uso)")
             # Inicializar cliente de OpenAI
             try:
                 st.session_state.chat = OpenAI(api_key=st.session_state.api_key)
             except Exception as e:
-                success_message.error(f"Error: {e}")
+                st.session_state.success_message.error(f"Error: {e}")
 
         elif api_key == "":
-            success_message.error("No dejes el campo vacío bobo")
+            st.session_state.success_message.error("No dejes el campo vacío bobo")
         else:
-            success_message.error("Este tipo de clave es inválida!")
+            st.session_state.success_message.error("Este tipo de clave es inválida!")
 
         time.sleep(1)
 
@@ -87,9 +85,6 @@ def main():
     if "input_key" not in st.session_state:
         st.session_state.input_key = None
 
-    if "success_message" not in st.session_state:
-        st.session_state.success_message = st.success.empty()
-
 
     # Layout
 
@@ -116,6 +111,8 @@ def main():
     with col3:
         if "col3" not in st.session_state:
             st.session_state.col3 = col3
+
+        st.session_state.success_message = st.empty()
 
         st.markdown("""<style>.css-1aumxhk {margin-top: 3rem;}</style>""", unsafe_allow_html=True)
         st.markdown("""<style>.css-1aumxhk {margin-top: 2rem;}</style>""", unsafe_allow_html=True)
