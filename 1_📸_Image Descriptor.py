@@ -56,10 +56,28 @@ def api_on_change():
 
 def main():
 
-    # PAGE CONFIG
-    st.set_page_config(page_title="DESCRIPTOR DE IMÁGENES", page_icon=":robot_face:", layout="centered")
+    # Emoji of a camera: 
+    ### PAGE CONFIG ###
+
+    st.set_page_config(page_title="DESCRIPTOR DE IMÁGENES", 
+                       page_icon=":robot_face:", 
+                       layout="centered")
+    
+    ############## SIDEBAR ##############
+
+    st.sidebar.title("Menú")
+    st.sidebar.markdown("Aquí puedes encontrar información sobre el proyecto y el autor.")
+    st.sidebar.markdown("---")
+    st.sidebar.subheader("Sobre el proyecto")
+    st.sidebar.success("Este proyecto es una interfaz para el modelo de OpenAI GPT-4 Vision Preview, que es capaz de describir imágenes.")
+    
+
+    ############## MAIN ##############
+    
     st.title("DESCRIPTOR DE IMÁGENES")
     st.markdown("---")
+
+
     st.subheader("Funcionamiento")
     st.markdown("1) Introduce la API KEY de OpenAI (si no tienes, escribe 'contraseña', de esta forma usarás la clave gratuita de Dieguito, pero solo puedes usarla 1 vez)"
             "\n\n2) Sube una imagen"
@@ -125,8 +143,7 @@ def main():
     if uploaded_file:
         # DISPLAY IMAGE
         st.image(uploaded_file, width=250)
-    
-    st.markdown("---")
+
 
 
 
@@ -140,8 +157,6 @@ def main():
             disabled=not show_details,
         )
     
-    st.markdown("---")
-
 
     ################## SEND BUTTON ##################
 
@@ -222,6 +237,32 @@ def main():
         elif analyze_button:
             st.warning("Error")
 
+
+
+    ################## FOOTER ##################
+    
+    st.markdown("---")
+
+    st.subheader("Contacta con el autor")
+
+    contact_form = """
+    <form action="https://formsubmit.co/diegomarzafuertes@gmail.com" method="POST">
+        <input type="hidden" name="_captcha" value="false">
+        <input type="text" name="name" placeholder="Escribe tu nombre" required>
+        <input type="email" name="email" placeholder="Escribe tu mail" required>
+        <textarea name="message" placeholder="Escribe aquí tu mensaje" required></textarea>
+        <button type="submit">Send</button>
+        <input type="hidden" name="_next" value="https://chatbot-diego.streamlit.app/">
+    </form>
+    """
+
+    st.markdown(contact_form, unsafe_allow_html=True)
+
+    def local_css(file_name):
+        with open(file_name) as f:
+            st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+
+    local_css("style/style.css")
             
 
 if __name__ == "__main__":
