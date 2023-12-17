@@ -59,7 +59,7 @@ def main():
     # Emoji of a camera: 
     ### PAGE CONFIG ###
 
-    st.set_page_config(page_title="DESCRIPTOR DE IMÁGENES", 
+    st.set_page_config(page_title="1_📸_Image Descriptor", 
                        page_icon=":robot_face:", 
                        layout="centered")
     
