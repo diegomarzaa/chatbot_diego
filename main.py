@@ -8,13 +8,8 @@ from io import BytesIO
 
 import re
 import time
-import pygame
-pygame.mixer.init()
 
 # MIS FUNCIONES
-
-from tts import play_audio, create_audio, stop_audio
-
 
 
 def encode_image(image_file):
@@ -102,8 +97,8 @@ def main():
     if "api_key" not in st.session_state:
         st.session_state.api_key = None
 
-    if "secret_developer_key" not in st.session_state:
-        st.session_state.secret_developer_key = st.secrets.OPENAI_API_KEY
+    # if "secret_developer_key" not in st.session_state:
+    #     st.session_state.secret_developer_key = st.secrets.OPENAI_API_KEY
 
     if "chat" not in st.session_state:
         st.session_state.chat = None
@@ -155,6 +150,12 @@ def main():
 
 
 
+    ################## SLIDERAS ##################
+        
+    sarcastic = st.slider("Nivel de sarcasmo: ", 0, 100, 50, 10)
+    descriptive = st.slider("Longitud de la descripción: ", 0, 100, 50, 10)
+
+
     ################## EXTRA PROMPT ##################
 
     show_details = st.toggle("Agregar instrucciones?", value=False)
@@ -166,33 +167,36 @@ def main():
         )
     
 
+
     ################## SEND BUTTON ##################
+        
+    prompt_text = (
+                "Describe la imagen de la siguiente forma:\n"
+                "Un nivel de ironía del " + str(sarcastic) + "%, donde 0% es completamente serio, formal, con un lenguaje extremadamente culto, completamente racional y científico. Y un nivel del 100% es completamente irónico, tus palabras desprenden puro humor y falta de seriedad, una forma extremadamente juguetona y divertida. En cualquiera de estos extremos eres lo más exagerado posible, incluso dando rabia."
+                "\n\n"
+                "Una longitud de descripción del " + str(descriptive) + "%, donde 0% es una descripción extremadamente corta, demasiado corta, de una a tres palabras, extremadamente sintético. Y un nivel del 100% es una descripción extremadamente larga, tan larga que la descripción es super detallada y acertada, sin dejar escapar nada."
+            )        
+
+    if show_details and additional_details:
+        prompt_text += (
+            f'\n\nContexto adicional:\n{additional_details}'
+        )
+
 
     analyze_button = st.button("Analizar imagen")
 
-    if uploaded_file and st.session_state['api_key'] != None and analyze_button and st.session_state['chat'] and (st.session_state["usos_dev_key"] > 0 or st.session_state["api_key"] != st.session_state["secret_developer_key"]):
+    if uploaded_file and st.session_state['api_key'] != None and analyze_button and st.session_state['chat'] != None:
         print("Analizando imagen...")
 
-        # Restar uso de la clave
-        if st.session_state["api_key"] == st.session_state["secret_developer_key"]:
-            st.session_state["usos_dev_key"] = 0
+        # # Restar uso de la clave
+        # if st.session_state["api_key"] == st.session_state["secret_developer_key"]:
+        #     st.session_state["usos_dev_key"] -= 1
         
         # Texto de carga
         with st.spinner("Analizando imagen..."):
 
             # Encode image
             base64_image = encode_image(uploaded_file)
-
-            # Prompt optimizado + detalles extra
-            prompt_text = (
-                "Eres un analizador de imágenes."
-                "Tu tarea es analizar la imagen proporcionada de forma lo más simple y concreta posible."
-            )        
-
-            if show_details and additional_details:
-                prompt_text += (
-                    f'\n\nContexto adicional:\n{additional_details}'
-                )
 
             # Generar payload
             messages = [
@@ -218,32 +222,20 @@ def main():
 
                 # Con stream
 
-                # TODO TEMPORALMENTE DESACTIVADO
-                if True:
-                    full_response = ""
-                    message_placeholder = st.empty()
-                    for completion in st.session_state["chat"].chat.completions.create(
-                        model='gpt-4-vision-preview', messages=messages, max_tokens=1200, stream=True
-                    ):
-                        # Hay contenido?
-                        if completion.choices[0].delta.content is not None:
-                            full_response += completion.choices[0].delta.content
-                            message_placeholder.markdown(full_response + "  ")
-                        
-                    # Mensaje final cuando se acaba el stream
-                    message_placeholder.markdown(full_response)
-                else:
-                    full_response = "Esto es una respuesta de prueba.Esto es una respuesta de pruebaEsto es una respuesta "
-                    st.markdown(full_response)       
+                full_response = ""
+                message_placeholder = st.empty()
 
-                stop_audio_button = st.button("Parar audio")                
-                if stop_audio_button:
-                    pygame.mixer.music.stop()
-    
-                # Reproducir audio
-                create_audio(full_response)
-                pygame.mixer.music.load("audio.mp3")
-                pygame.mixer.music.play()
+                for completion in st.session_state["chat"].chat.completions.create(
+                    model='gpt-4-vision-preview', messages=messages, max_tokens=1200, stream=True
+                ):
+                    # Hay contenido?
+                    if completion.choices[0].delta.content is not None:
+                        full_response += completion.choices[0].delta.content
+                        message_placeholder.markdown(full_response + "  ")
+                    
+                # Mensaje final cuando se acaba el stream
+                message_placeholder.markdown(full_response)
+
 
             except Exception as e:
                 st.error(f"Error: {e}")
