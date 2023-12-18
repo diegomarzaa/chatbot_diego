@@ -8,6 +8,14 @@ from io import BytesIO
 
 import re
 import time
+import pygame
+pygame.mixer.init()
+
+# MIS FUNCIONES
+
+from tts import play_audio, create_audio, stop_audio
+
+
 
 def encode_image(image_file):
     """Encode image to base64 string."""
@@ -162,11 +170,12 @@ def main():
 
     analyze_button = st.button("Analizar imagen")
 
-    if uploaded_file and st.session_state['api_key'] != None and analyze_button and st.session_state['chat'] and st.session_state["usos_dev_key"] > 0:
+    if uploaded_file and st.session_state['api_key'] != None and analyze_button and st.session_state['chat'] and (st.session_state["usos_dev_key"] > 0 or st.session_state["api_key"] != st.session_state["secret_developer_key"]):
         print("Analizando imagen...")
 
         # Restar uso de la clave
-        st.session_state["usos_dev_key"] -= 1
+        if st.session_state["api_key"] == st.session_state["secret_developer_key"]:
+            st.session_state["usos_dev_key"] = 0
         
         # Texto de carga
         with st.spinner("Analizando imagen..."):
@@ -177,8 +186,7 @@ def main():
             # Prompt optimizado + detalles extra
             prompt_text = (
                 "Eres un analizador de imágenes."
-                "Tu tarea es analizar la imagen en gran detalle."
-                "Presenta tu análisis markdown, no uses los carácteres: ``` para rodear tu texto."
+                "Tu tarea es analizar la imagen proporcionada de forma lo más simple y concreta posible."
             )        
 
             if show_details and additional_details:
@@ -209,21 +217,33 @@ def main():
                 # )
 
                 # Con stream
-                full_response = ""
-                message_placeholder = st.empty()
-                for completion in st.session_state["chat"].chat.completions.create(
-                    model='gpt-4-vision-preview', messages=messages, max_tokens=1200, stream=True
-                ):
-                    # Hay contenido?
-                    if completion.choices[0].delta.content is not None:
-                        full_response += completion.choices[0].delta.content
-                        message_placeholder.markdown(full_response + "  ")
-                    
-                # Mensaje final cuando se acaba el stream
-                message_placeholder.markdown(full_response)
 
-                # Poner respuesta en la app
-                # st.write(completion.choices[0].messages.content)
+                # TODO TEMPORALMENTE DESACTIVADO
+                if True:
+                    full_response = ""
+                    message_placeholder = st.empty()
+                    for completion in st.session_state["chat"].chat.completions.create(
+                        model='gpt-4-vision-preview', messages=messages, max_tokens=1200, stream=True
+                    ):
+                        # Hay contenido?
+                        if completion.choices[0].delta.content is not None:
+                            full_response += completion.choices[0].delta.content
+                            message_placeholder.markdown(full_response + "  ")
+                        
+                    # Mensaje final cuando se acaba el stream
+                    message_placeholder.markdown(full_response)
+                else:
+                    full_response = "Esto es una respuesta de prueba.Esto es una respuesta de pruebaEsto es una respuesta "
+                    st.markdown(full_response)       
+
+                stop_audio_button = st.button("Parar audio")                
+                if stop_audio_button:
+                    pygame.mixer.music.stop()
+    
+                # Reproducir audio
+                create_audio(full_response)
+                pygame.mixer.music.load("audio.mp3")
+                pygame.mixer.music.play()
 
             except Exception as e:
                 st.error(f"Error: {e}")

@@ -24,6 +24,10 @@
 
 
 
+# TODO:
+
+- Texto a audio, audio a texto
+- Uso de assistants, investigación
 
 
 # OTROS:
