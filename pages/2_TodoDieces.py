@@ -50,7 +50,7 @@ def main():
             rows = data[1:]
 
             df = pd.DataFrame(rows, columns=headers)
-            df.to_csv('/home/diego/Documents/A-PARA/3-Resources/Programming_projects/1PROJECTS/Streamlit-Chatbot-Interface/data.csv', index=False)
+            df.to_csv('../data.csv', index=False)
             print("File created successfully.")
         else:
             print("No data available in the sheet.")
@@ -61,7 +61,7 @@ def main():
     
     with st.expander("Ver tabla de notas"):
 
-        df = pd.read_csv('/home/diego/Documents/A-PARA/3-Resources/Programming_projects/1PROJECTS/Streamlit-Chatbot-Interface/data.csv')
+        df = pd.read_csv('../data.csv')
         st.dataframe(df)
 
 
@@ -172,7 +172,7 @@ def main():
         button_nube = st.button("Actualizar datos")
         if button_nube:
             with st.spinner("Actualizando datos..."):
-                df = pd.read_csv('/home/diego/Documents/A-PARA/3-Resources/Programming_projects/1PROJECTS/Streamlit-Chatbot-Interface/data.csv')
+                df = pd.read_csv('../data.csv')
 
                 df = df.astype(str)  # Convert float values to strings
 
