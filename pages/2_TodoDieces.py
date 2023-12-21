@@ -50,7 +50,10 @@ def main():
             rows = data[1:]
 
             df = pd.DataFrame(rows, columns=headers)
-            df.to_csv('/mount/src/chatbot_diego/data.csv', index=False)
+            try:
+                df.to_csv('/mount/src/chatbot_diego/data.csv', index=False)      #TODO ARREGLAR PATH
+            except:
+                df.to_csv('/home/diego/Documents/A-PARA/3-Resources/Programming_projects/1PROJECTS/Streamlit-Chatbot-Interface/data.csv', index=False)
             print("File created successfully.")
         else:
             print("No data available in the sheet.")
@@ -61,7 +64,11 @@ def main():
     
     with st.expander("Ver tabla de notas"):
 
-        df = pd.read_csv('/mount/src/chatbot_diego/data.csv')
+        try:
+            df.to_csv('/mount/src/chatbot_diego/data.csv', index=False)
+        except: 
+            df.to_csv('/home/diego/Documents/A-PARA/3-Resources/Programming_projects/1PROJECTS/Streamlit-Chatbot-Interface/data.csv', index=False)
+
         st.dataframe(df)
 
 
@@ -110,8 +117,9 @@ def main():
 
         # NOTAS
 
-        for col_person, col in zip(range(0, 5), st.columns(5)):
-            col.text_input("Nota de: " + df.columns[col_person+3])
+        with st.expander("Agregar notas?"):
+            for col_person, col in zip(range(0, 5), st.columns(5)):
+                col.text_input("Nota de: " + df.columns[col_person+3])
             
         # CREAR
             
@@ -147,10 +155,15 @@ def main():
         with notas_faltantes:
             st.info("Función en construcción.")
             for col_person in range(3, len(df.columns)):
-                st.markdown("**Notas faltantes de " + df.columns[col_person] + ":**")
-                for fila_nota in range(0, len(df)):
-                    if pd.isna(df.iloc[fila_nota, col_person]):
-                        st.text_input("\n" + df.iloc[fila_nota, 0] + " de la asignatura " + df.iloc[fila_nota, 1] + " el dia " + df.iloc[fila_nota, 2] + ": ", key=str(fila_nota) + str(col_person))
+                with st.expander("Notas faltantes de " + df.columns[col_person]):
+                    for fila_nota in range(0, len(df)):
+                        if pd.isna(df.iloc[fila_nota, col_person]):
+                            st.text_input("\n" + df.iloc[fila_nota, 0] + " de la asignatura " + df.iloc[fila_nota, 1] + " el dia " + df.iloc[fila_nota, 2] + ": ", key=str(fila_nota) + str(col_person))
+            boton_actualizar_notas = st.button("Actualizar notas")
+            if boton_actualizar_notas:
+                with st.spinner("Actualizando notas..."):
+                    time.sleep(1)
+                st.success("Notas actualizadas correctamente.")
 
      
     # ELIMINAR TESTS ANTIGUOS # TODO
@@ -172,7 +185,10 @@ def main():
         button_nube = st.button("Actualizar datos")
         if button_nube:
             with st.spinner("Actualizando datos..."):
-                df = pd.read_csv('/mount/src/chatbot_diego/data.csv')
+                try:
+                    df.to_csv('/mount/src/chatbot_diego/data.csv', index=False)
+                except: 
+                    df.to_csv('/home/diego/Documents/A-PARA/3-Resources/Programming_projects/1PROJECTS/Streamlit-Chatbot-Interface/data.csv', index=False)
 
                 df = df.astype(str)  # Convert float values to strings
 

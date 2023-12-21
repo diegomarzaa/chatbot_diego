@@ -77,10 +77,9 @@ def main():
 
     ############## MAIN ##############
     
+    st.subheader(":balloon: **NUEVA APP: [UJI TODO DIECES: LA WEB OFICIAL](https://chatbot-diego.streamlit.app/TodoDieces)**")
+
     st.title("DESCRIPTOR DE IMÁGENES")
-    st.markdown("---")
-
-
     st.subheader("Funcionamiento")
     st.markdown("1) Introduce la API KEY de OpenAI (si no tienes, escribe 'contraseña', de esta forma usarás la clave gratuita de Dieguito, pero solo puedes usarla 1 vez)"
             "\n\n2) Sube una imagen"
@@ -105,6 +104,8 @@ def main():
 
     if "input_key" not in st.session_state:
         st.session_state.input_key = None
+
+
 
 
     # Layout
