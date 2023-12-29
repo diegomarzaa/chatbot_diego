@@ -1,3 +1,4 @@
+
 from openai import OpenAI
 
 import streamlit as st
@@ -10,7 +11,6 @@ import re
 import time
 
 # MIS FUNCIONES
-
 
 def encode_image(image_file):
     """Encode image to base64 string."""

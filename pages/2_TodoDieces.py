@@ -3,10 +3,10 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import pandas as pd
 import time
+import os
 
 def main():
 
-    # Emoji of a camera: 
     ### PAGE CONFIG ###
 
     st.set_page_config(page_title="2_TodoDieces", 
@@ -29,6 +29,7 @@ def main():
     usar_nube = False       # TODO: Desactivar para no usar recursos de la nube
 
     if usar_nube:
+        # TODO ARREGLAR TODO, PATHS, ETC
         # AJUSTES INICIALES
 
         scope = ["https://www.googleapis.com/auth/spreadsheets",
@@ -52,7 +53,8 @@ def main():
         try:
             df.to_csv('/mount/src/chatbot_diego/data.csv', index=False)      #TODO ARREGLAR PATH
         except:
-            df.to_csv('/home/diego/Documents/A-PARA/3-Resources/Programming_projects/1PROJECTS/Streamlit-Chatbot-Interface/data.csv', index=False)
+            current_path = os.getcwd()
+            df.to_csv(current_path + '/data.csv', index=False)
         print("File created successfully.")
 
 
@@ -67,13 +69,17 @@ def main():
                 df.to_csv('/home/diego/Documents/A-PARA/3-Resources/Programming_projects/1PROJECTS/Streamlit-Chatbot-Interface/data.csv', index=False)
 
             st.dataframe(df)
-
     else:
         try:
-            df = pd.read_csv('/mount/src/chatbot_diego/data.csv')
+            current_path = os.getcwd()
+            df = pd.read_csv(current_path + '/data.csv')
         except:
-            df = pd.read_csv('/home/diego/Documents/A-PARA/3-Resources/Programming_projects/1PROJECTS/Streamlit-Chatbot-Interface/data.csv')
-        st.dataframe(df)
+            current_path = os.getcwd()
+            df = pd.read_csv(current_path + '/data.csv')
+        
+        with st.expander("Ver tabla de notas"):
+
+            st.dataframe(df)
 
 
     # DIAGRAMA DE BARRAS
@@ -191,7 +197,8 @@ def main():
                 try:
                     df.to_csv('/mount/src/chatbot_diego/data.csv', index=False)
                 except: 
-                    df.to_csv('/home/diego/Documents/A-PARA/3-Resources/Programming_projects/1PROJECTS/Streamlit-Chatbot-Interface/data.csv', index=False)
+                    current_path = os.getcwd()
+                    df = pd.read_csv(current_path + '/data.csv')
 
                 df = df.astype(str)  # Convert float values to strings
 
@@ -201,8 +208,6 @@ def main():
                 sheet.update([df.columns.values.tolist()] + df.values.tolist())
 
             st.success("Datos actualizados correctamente.")
-
-
 
 
 
